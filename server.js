@@ -4,8 +4,11 @@ const express = require("express"),
 const cors = require("cors");
 app.use(cors);
 
-const http = require("http").createServer(app);
-const io = require("socket.io")(http);
+const server = express().listen(port, () =>
+    console.log(`Listening on ${port}`)
+);
+
+const io = require("socket.io")(server);
 
 let clients = {};
 
@@ -28,5 +31,3 @@ io.on("connect", (socket) => {
 
     console.log("a user connected!");
 });
-
-app.listen(port, () => console.log(`listening on port: ${port}`));
