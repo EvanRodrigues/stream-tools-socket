@@ -46,7 +46,7 @@ const handleSocketEvent = (eventData) => {
         });
     } else {
         //production
-        https.get(`${url}/api/goal/accessToken/${token}`, (res) => {
+        https.get(`${url}api/goal/accessToken/${token}`, (res) => {
             emitAmount(res, amount);
         });
     }
