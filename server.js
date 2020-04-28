@@ -1,5 +1,6 @@
 const https = require("https");
 const http = require("http");
+const request = require("request");
 const express = require("express"),
     app = express(),
     port = process.env.PORT || 5001;
@@ -21,11 +22,23 @@ let providerSocket;
 if (process.env.NODE_ENV != "production") url = require("./config/keys").URL;
 else url = "https://stream-goal.herokuapp.com/";
 
+const updateProgress = (channel, progress, amount) => {
+    const totalProgress = progress + amount;
+
+    request.post(`${url}api/goal/updateProgress/${channel}`, {
+        json: { progress: totalProgress },
+    });
+};
+
 //Parses the response of the http/https request and emits the amount to the right clients.
 const emitAmount = (res, amount) => {
     res.setEncoding("utf8");
     res.on("data", (data) => {
         const accessToken = JSON.parse(data).accessToken;
+        const progress = JSON.parse(data).progress;
+        const channel = JSON.parse(data).channel;
+
+        updateProgress(channel, progress, amount);
 
         clients[accessToken].forEach((socket) => {
             socket.emit("event", { amount: amount });
@@ -41,12 +54,12 @@ const handleSocketEvent = (eventData) => {
 
     if (url.startsWith("http://")) {
         //dev
-        http.get(`${url}api/goal/accessToken/${token}`, (res) => {
+        http.get(`${url}api/goal/channelInfo/${token}`, (res) => {
             emitAmount(res, amount);
         });
     } else {
         //production
-        https.get(`${url}api/goal/accessToken/${token}`, (res) => {
+        https.get(`${url}api/goal/channelInfo/${token}`, (res) => {
             emitAmount(res, amount);
         });
     }
