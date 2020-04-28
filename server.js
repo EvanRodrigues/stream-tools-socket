@@ -1,6 +1,6 @@
 const https = require("https");
 const http = require("http");
-const request = require("request");
+const axios = require("axios");
 const express = require("express"),
     app = express(),
     port = process.env.PORT || 5001;
@@ -25,8 +25,8 @@ else url = "https://stream-goal.herokuapp.com/";
 const updateProgress = (channel, progress, amount) => {
     const totalProgress = progress + amount;
 
-    request.post(`${url}api/goal/updateProgress/${channel}`, {
-        json: { progress: totalProgress },
+    axios.post(`${url}api/goal/updateProgress/${channel}`, {
+        progress: totalProgress,
     });
 };
 
