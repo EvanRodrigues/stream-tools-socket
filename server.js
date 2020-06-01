@@ -38,9 +38,9 @@ const minutesToSeconds = (minutes) => {
 //This should keep the server from falling asleep while the bar is visible.
 //TODO: Remove this functionality when paying for server to remain active.
 const emitPing = () => {
-    console.log("EMITTING PING");
     if (Object.keys(clients).length > 0) {
-        providerSocket.emit("ping");
+        console.log("EMITTING PING");
+        providerSocket.emit("ping", {});
     }
 };
 
