@@ -40,7 +40,7 @@ const minutesToSeconds = (minutes) => {
 const emitPing = () => {
     if (Object.keys(clients).length > 0) {
         console.log("EMITTING PING");
-        providerSocket.emit("ping", {});
+        providerSocket.emit("test_connection", {});
     }
 };
 
