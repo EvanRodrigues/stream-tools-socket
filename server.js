@@ -30,6 +30,19 @@ const updateProgress = (channel, progress, amount) => {
     });
 };
 
+const minutesToSeconds = (minutes) => {
+    return minutes * 60;
+};
+
+//Pings the server if there are active clients.
+//This should keep the server from falling asleep while the bar is visible.
+//TODO: Remove this functionality when paying for server to remain active.
+const emitPing = () => {
+    if (Object.keys(clients).length > 0) {
+        providerSocket.emit("ping");
+    }
+};
+
 //Parses the response of the http/https request and emits the amount to the right clients.
 const emitAmount = (res, amount) => {
     res.setEncoding("utf8");
@@ -65,6 +78,19 @@ const handleSocketEvent = (eventData) => {
     }
 };
 
+//Removes socket from the client object.
+//Returns the number of the clients connected to the token.
+const removeClient = (clients, socket_id) => {
+    for (let i = 0; i < clients.length; i++) {
+        if (clients[i].id == socket_id) {
+            clients.splice(i, 1);
+            break;
+        }
+    }
+
+    return clients.length;
+};
+
 io.on("connect", (socket) => {
     const token = socket.handshake.query.token;
     const provider = socket.handshake.query.provider;
@@ -92,9 +118,19 @@ io.on("connect", (socket) => {
         console.log(socket.handshake.query.provider);
 
         socket.on("disconnect", () => {
+            const client_token = socket.handshake.query.token;
+            const new_length = removeClient(clients[client_token], socket.id);
+
+            if (new_length == 0) {
+                delete clients[client_token];
+            }
+
             console.log("a user disconnected!");
         });
 
         console.log("a user connected!");
     }
 });
+
+//Ping the server every 5 minutes.
+setTimeout(emitPing, minutesToSeconds(5));
