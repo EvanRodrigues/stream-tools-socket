@@ -31,13 +31,14 @@ const updateProgress = (channel, progress, amount) => {
 };
 
 const minutesToSeconds = (minutes) => {
-    return minutes * 60;
+    return minutes * 60000;
 };
 
 //Pings the server if there are active clients.
 //This should keep the server from falling asleep while the bar is visible.
 //TODO: Remove this functionality when paying for server to remain active.
 const emitPing = () => {
+    console.log("EMITTING PING");
     if (Object.keys(clients).length > 0) {
         providerSocket.emit("ping");
     }
@@ -133,4 +134,4 @@ io.on("connect", (socket) => {
 });
 
 //Ping the server every 5 minutes.
-setTimeout(emitPing, minutesToSeconds(5));
+setInterval(emitPing, minutesToSeconds(5));
