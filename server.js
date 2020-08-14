@@ -95,6 +95,9 @@ const removeClient = (clients, socket_id) => {
 io.on("connect", (socket) => {
     const token = socket.handshake.query.token;
     const provider = socket.handshake.query.provider;
+    const login = socket.handshake.query.login;
+    const code = socket.handshake.query.code;
+    const redirectUri = socket.handshake.query.redirectUri;
 
     if (providerToken == provider) {
         //Set up providerSocket
@@ -109,7 +112,25 @@ io.on("connect", (socket) => {
         });
 
         console.log("providerSocket connected!");
+    } else if (login == "true" && code !== null && redirectUri !== null) {
+        //Login attempt
+        const CLIENT_SECRET =
+            process.env.CLIENT_SECRET || require("./config/keys").CLIENT_SECRET;
+        const CLIENT_ID =
+            process.env.CLIENT_ID || require("./config/keys").CLIENT_ID;
+
+        const accessUrl = `https://id.twitch.tv/oauth2/token?client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&code=${code}&grant_type=authorization_code&redirect_uri=${redirectUri}`;
+
+        try {
+            axios
+                .post(`${accessUrl}`)
+                .then((res) => res["data"]["access_token"])
+                .then((token) => {
+                    socket.emit("userInfo", { token: token });
+                });
+        } catch (err) {}
     } else {
+        //Client connected
         //Set up clientSockets
         if (clients[token] == null) {
             if (token != null) clients[token] = [socket];
