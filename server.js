@@ -93,11 +93,12 @@ const removeClient = (clients, socket_id) => {
 };
 
 io.on("connect", (socket) => {
-    const token = socket.handshake.query.token;
-    const provider = socket.handshake.query.provider;
-    const login = socket.handshake.query.login;
-    const code = socket.handshake.query.code;
-    const redirectUri = socket.handshake.query.redirectUri;
+    const token = socket.handshake.query.token; //token to match user
+    const provider = socket.handshake.query.provider; //token to determine the provider socket.
+    const login = socket.handshake.query.login; //boolean for a login request
+    const code = socket.handshake.query.code; //login code from twitch
+    const redirectUri = socket.handshake.query.redirectUri; //redirect code for twitch login
+    const refresh = socket.handshake.query.refresh; //boolean for a refresh on the displayed goal bars.
 
     if (providerToken == provider) {
         //Set up providerSocket
@@ -129,15 +130,18 @@ io.on("connect", (socket) => {
                     socket.emit("userInfo", { token: token });
                 });
         } catch (err) {}
+    } else if (refresh == "true" && token != null) {
+        socket.on("refresh", () => {
+            clients[token].forEach((socket) => {
+                socket.emit("refresh");
+            });
+        });
     } else {
         //Client connected
         //Set up clientSockets
         if (clients[token] == null) {
             if (token != null) clients[token] = [socket];
         } else clients[token].push(socket);
-
-        console.log(socket.handshake.query.token);
-        console.log(socket.handshake.query.provider);
 
         socket.on("disconnect", () => {
             const client_token = socket.handshake.query.token;
