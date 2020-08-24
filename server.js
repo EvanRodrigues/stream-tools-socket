@@ -132,9 +132,11 @@ io.on("connect", (socket) => {
         } catch (err) {}
     } else if (refresh == "true" && token != null) {
         socket.on("refresh", () => {
-            clients[token].forEach((socket) => {
-                socket.emit("refresh");
-            });
+            try {
+                clients[token].forEach((socket) => {
+                    socket.emit("refresh");
+                });
+            } catch (err) {}
         });
     } else {
         //Client connected
