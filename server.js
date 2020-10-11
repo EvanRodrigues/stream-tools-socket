@@ -25,7 +25,7 @@ else url = "https://stream-goal.herokuapp.com/";
 const updateProgress = (channel, progress, amount) => {
     const totalProgress = progress + amount;
 
-    axios.post(`${url}api/goal/updateProgress/${channel}`, {
+    axios.put(`${url}api/goal/updateProgress/${channel}`, {
         progress: totalProgress,
     });
 };
