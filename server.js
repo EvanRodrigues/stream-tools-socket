@@ -7,11 +7,20 @@ const express = require("express"),
 const cors = require("cors");
 app.use(cors);
 
+const origin = process.env.PORT
+    ? "https://stream-goal.herokuapp.com"
+    : "http://localhost:3000";
+
 const server = express().listen(port, () =>
     console.log(`Listening on ${port}`)
 );
 
-const io = require("socket.io")(server);
+const io = require("socket.io")(server, {
+    cors: {
+        origin: origin,
+        credentials: true,
+    },
+});
 const providerToken =
     process.env.PROVIDER_TOKEN || require("./config/keys").PROVIDER_TOKEN;
 
@@ -40,6 +49,9 @@ const minutesToSeconds = (minutes) => {
 const emitPing = () => {
     if (Object.keys(clients).length > 0) {
         console.log("EMITTING PING");
+
+        if (!providerSocket) return;
+
         providerSocket.emit("test_connection", {});
     }
 };
@@ -92,7 +104,11 @@ const removeClient = (clients, socket_id) => {
     return clients.length;
 };
 
-io.on("connect", (socket) => {
+io.on("connect_error", (err) => {
+    console.log(`${err.message}`);
+});
+
+io.on("connection", (socket) => {
     const token = socket.handshake.query.token; //token to match user
     const provider = socket.handshake.query.provider; //token to determine the provider socket.
     const login = socket.handshake.query.login; //boolean for a login request
