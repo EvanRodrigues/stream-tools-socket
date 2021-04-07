@@ -16,6 +16,7 @@ const server = express().listen(port, () =>
 );
 
 const io = require("socket.io")(server, {
+    allowEIO3: true,
     cors: {
         origin: origin,
         credentials: true,
